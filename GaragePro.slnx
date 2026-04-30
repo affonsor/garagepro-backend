@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GaragePro.API/GaragePro.API.csproj" />
+    <Project Path="src/GaragePro.Application/GaragePro.Application.csproj" />
+    <Project Path="src/GaragePro.Core/GaragePro.Core.csproj" />
+    <Project Path="src/GaragePro.Infrastructure/GaragePro.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GaragePro.UnitTests/GaragePro.UnitTests.csproj" />
+  </Folder>
+</Solution>

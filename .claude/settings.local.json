@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash .specify/extensions/git/scripts/bash/create-new-feature.sh --json --short-name \"docker-compose-infra\" \"Criar a infra estrutura do projeto no docker-compose\")",
+      "Bash(mkdir -p /c/Git/SDD/controla-ai/specs/001-docker-compose-infra/contracts)",
+      "Bash(mkdir -p /c/Git/SDD/controla-ai/specs/001-docker-compose-infra/checklists)",
+      "Bash(bash .specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks)",
+      "Bash(git check-ignore *)",
+      "Bash(dotnet new *)",
+      "Bash(dotnet add *)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet restore *)",
+      "Bash(*)",
+      "PowerShell(*)",
+      "Bash(powershell -Command 'try { $types = [System.Reflection.Assembly]::LoadFrom\\('\\\\''C:\\\\Users\\\\rfaff\\\\.nuget\\\\packages\\\\swashbuckle.aspnetcore.swaggergen\\\\10.1.7\\\\lib\\\\net10.0\\\\Swashbuckle.AspNetCore.SwaggerGen.dll'\\\\''\\).GetTypes\\(\\) } catch [System.Reflection.ReflectionTypeLoadException] { $types = $_.Exception.Types | Where-Object { $_ -ne $null } } $types | Where-Object { $_.Name -like '\\\\''*Security*'\\\\'' } | Select-Object FullName')",
+      "PowerShell(docker exec controla-ai-web-1 ls /app/node_modules/@tailwindcss/)",
+      "PowerShell(docker exec -w /app controla-ai-web-1 node -e \"const tw = require\\('@tailwindcss/postcss'\\); console.log\\('type:', typeof tw\\); console.log\\('keys:', Object.keys\\(tw\\).join\\(','\\)\\)\")"
+    ],
+    "defaultMode": "auto"
+  }
+}
