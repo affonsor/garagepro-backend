@@ -13,6 +13,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<VehicleTransferRecord> VehicleTransferRecords => Set<VehicleTransferRecord>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Service> Services => Set<Service>();
+    public DbSet<ServiceVehiclePrice> ServiceVehiclePrices => Set<ServiceVehiclePrice>();
+    public DbSet<ServiceMaterial> ServiceMaterials => Set<ServiceMaterial>();
+    public DbSet<ServiceStep> ServiceSteps => Set<ServiceStep>();
+    public DbSet<ServiceOrder> ServiceOrders => Set<ServiceOrder>();
+    public DbSet<ServiceOrderServiceLine> ServiceOrderServiceLines => Set<ServiceOrderServiceLine>();
+    public DbSet<ServiceOrderProductLine> ServiceOrderProductLines => Set<ServiceOrderProductLine>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<AppointmentRescheduleHistory> AppointmentRescheduleHistories => Set<AppointmentRescheduleHistory>();
 
@@ -26,6 +32,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration(new VehicleTransferRecordConfiguration());
         modelBuilder.ApplyConfiguration(new ProductConfiguration());
         modelBuilder.ApplyConfiguration(new ServiceConfiguration());
+        modelBuilder.ApplyConfiguration(new ServiceVehiclePriceConfiguration());
+        modelBuilder.ApplyConfiguration(new ServiceMaterialConfiguration());
+        modelBuilder.ApplyConfiguration(new ServiceStepConfiguration());
+        modelBuilder.ApplyConfiguration(new ServiceOrderConfiguration());
+        modelBuilder.ApplyConfiguration(new ServiceOrderServiceLineConfiguration());
+        modelBuilder.ApplyConfiguration(new ServiceOrderProductLineConfiguration());
         modelBuilder.ApplyConfiguration(new AppointmentConfiguration());
         modelBuilder.ApplyConfiguration(new AppointmentRescheduleHistoryConfiguration());
     }

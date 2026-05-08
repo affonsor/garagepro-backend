@@ -11,7 +11,7 @@ public class CreateAppointmentValidatorTests
     public void Validate_ShouldFail_WhenExpectedEndAtIsBeforeStartAt()
     {
         var start = DateTimeOffset.UtcNow.AddHours(2);
-        var cmd = new CreateAppointmentCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
+        var cmd = new CreateAppointmentCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
             start, start.AddMinutes(-30), null);
 
         var result = _validator.Validate(cmd);
@@ -24,7 +24,7 @@ public class CreateAppointmentValidatorTests
     public void Validate_ShouldFail_WhenClientIdIsEmpty()
     {
         var start = DateTimeOffset.UtcNow.AddHours(1);
-        var cmd = new CreateAppointmentCommand(Guid.Empty, Guid.NewGuid(), Guid.NewGuid(),
+        var cmd = new CreateAppointmentCommand(Guid.Empty, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
             start, start.AddHours(1), null);
 
         var result = _validator.Validate(cmd);
@@ -37,7 +37,7 @@ public class CreateAppointmentValidatorTests
     public void Validate_ShouldPass_WhenAllFieldsAreValid()
     {
         var start = DateTimeOffset.UtcNow.AddHours(1);
-        var cmd = new CreateAppointmentCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
+        var cmd = new CreateAppointmentCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
             start, start.AddHours(2), null);
 
         var result = _validator.Validate(cmd);

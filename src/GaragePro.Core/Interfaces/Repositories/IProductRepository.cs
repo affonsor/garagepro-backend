@@ -5,7 +5,12 @@ namespace GaragePro.Core.Interfaces.Repositories;
 public interface IProductRepository
 {
     Task<Product?> GetByIdAsync(Guid id);
-    Task<(IEnumerable<Product> Products, int TotalCount)> GetAllAsync(int pageNumber, int pageSize);
+    Task<(IEnumerable<Product> Products, int TotalCount)> GetAllAsync(
+        int pageNumber,
+        int pageSize,
+        string? search = null,
+        string? status = null,
+        string? category = null);
     Task<IEnumerable<Product>> GetActiveAsync(CancellationToken ct);
     Task CreateAsync(Product product);
     Task UpdateAsync(Product product);

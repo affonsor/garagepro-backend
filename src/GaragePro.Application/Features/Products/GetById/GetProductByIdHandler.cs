@@ -12,7 +12,6 @@ public class GetProductByIdHandler(IProductRepository productRepository) : IRequ
         if (product is null)
             return Result<ProductResponse>.NotFound("Product not found");
 
-        return Result<ProductResponse>.Success(
-            new ProductResponse(product.Id, product.Name, product.Description, product.Price, product.CreatedAt, product.UpdatedAt));
+        return Result<ProductResponse>.Success(ProductResponse.From(product));
     }
 }

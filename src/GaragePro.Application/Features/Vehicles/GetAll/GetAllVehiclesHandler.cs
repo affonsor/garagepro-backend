@@ -15,6 +15,7 @@ public class GetAllVehiclesHandler(IVehicleRepository vehicleRepository) : IRequ
             v.LicensePlate,
             v.Make,
             v.Model,
+            v.Type,
             v.Year,
             v.Color,
             new ClientRefResponse(v.Client.Id, v.Client.Name),

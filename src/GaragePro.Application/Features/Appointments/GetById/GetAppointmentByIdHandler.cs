@@ -23,6 +23,7 @@ public class GetAppointmentByIdHandler(IAppointmentRepository appointmentReposit
 
         var response = new AppointmentDetailResponse(
             appointment.Id, appointment.ClientId, appointment.Client.Name,
+            appointment.VehicleId, appointment.Vehicle.LicensePlate, appointment.Vehicle.Model, appointment.Vehicle.Type,
             appointment.ProductId, appointment.Product.Name,
             appointment.ServiceId, appointment.Service.Name,
             appointment.StartAt, appointment.ExpectedEndAt,

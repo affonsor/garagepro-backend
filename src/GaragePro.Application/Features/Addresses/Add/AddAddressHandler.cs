@@ -15,6 +15,9 @@ public class AddAddressHandler(
         if (client is null)
             return Result<Guid>.NotFound("Client not found");
 
+        if (!client.IsActive)
+            return Result<Guid>.Failure("Inactive clients cannot be modified");
+
         var address = new Address
         {
             Id = Guid.NewGuid(),

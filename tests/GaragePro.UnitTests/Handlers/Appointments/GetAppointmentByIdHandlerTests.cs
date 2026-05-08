@@ -54,11 +54,13 @@ public class GetAppointmentByIdHandlerTests
         ClientId = Guid.NewGuid(),
         ProductId = Guid.NewGuid(),
         ServiceId = Guid.NewGuid(),
+        VehicleId = Guid.NewGuid(),
         StartAt = DateTimeOffset.UtcNow,
         ExpectedEndAt = DateTimeOffset.UtcNow.AddHours(1),
         CreatedAt = DateTimeOffset.UtcNow,
         UpdatedAt = DateTimeOffset.UtcNow,
         Client = new Client { Name = "Test Client" },
+        Vehicle = new Vehicle { LicensePlate = "ABC1D23", Model = "Civic", Type = VehicleType.Car },
         Product = new Product { Name = "Test Product" },
         Service = new Service { Name = "Test Service" },
         RescheduleHistory = new List<AppointmentRescheduleHistory>()

@@ -8,4 +8,8 @@ public record UpdateClientCommand(
     string Name,
     string? Email,
     string? Phone,
-    string? Document) : IRequest<Result<Guid>>;
+    string Document,
+    string Tier = "standard",
+    DateOnly? Birthday = null,
+    string? AddressText = null,
+    string? Notes = null) : IRequest<Result<Guid>>;

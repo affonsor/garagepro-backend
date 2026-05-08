@@ -34,7 +34,8 @@ public class VehicleRepository(AppDbContext db) : IVehicleRepository
 
     public async Task<bool> ExistsByLicensePlateAsync(string licensePlate, Guid? excludeId = null)
     {
-        var query = db.Vehicles.Where(v => v.LicensePlate == licensePlate);
+        var normalized = licensePlate.Trim().ToUpper();
+        var query = db.Vehicles.Where(v => v.LicensePlate.ToUpper() == normalized);
         if (excludeId.HasValue)
             query = query.Where(v => v.Id != excludeId.Value);
         return await query.AnyAsync();

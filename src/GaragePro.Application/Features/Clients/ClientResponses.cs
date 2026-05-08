@@ -1,3 +1,5 @@
+using GaragePro.Core.Enums;
+
 namespace GaragePro.Application.Features.Clients;
 
 public record ClientSummaryResponse(
@@ -5,15 +7,30 @@ public record ClientSummaryResponse(
     string Name,
     string? Email,
     string? Phone,
+    string Document,
+    bool IsActive,
     int VehicleCount,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string Tier,
+    DateOnly? Birthday,
+    string? AddressText,
+    string? Notes,
+    int OrderCount,
+    decimal Ltv);
 
 public record ClientDetailResponse(
     Guid Id,
     string Name,
     string? Email,
     string? Phone,
-    string? Document,
+    string Document,
+    bool IsActive,
+    string Tier,
+    DateOnly? Birthday,
+    string? AddressText,
+    string? Notes,
+    int OrderCount,
+    decimal Ltv,
     IEnumerable<AddressResponse> Addresses,
     IEnumerable<VehicleInClientResponse> Vehicles,
     DateTimeOffset CreatedAt,
@@ -35,5 +52,8 @@ public record VehicleInClientResponse(
     string LicensePlate,
     string Make,
     string Model,
+    VehicleType Type,
     int Year,
-    string? Color);
+    string? Color,
+    int OrderCount,
+    decimal Ltv);

@@ -17,9 +17,18 @@ public class TransferVehicleHandler(
         if (vehicle.ClientId == request.ToClientId)
             return Result<TransferResponse>.Failure("Target client is the current owner");
 
+        if (!vehicle.Client.IsActive)
+            return Result<TransferResponse>.Failure("Inactive clients cannot transfer vehicles");
+
+        if (await clientRepository.CountVehiclesByClientIdAsync(vehicle.ClientId) <= 1)
+            return Result<TransferResponse>.Failure("Client must have at least one vehicle");
+
         var targetClient = await clientRepository.GetByIdAsync(request.ToClientId);
         if (targetClient is null)
             return Result<TransferResponse>.NotFound("Target client not found");
+
+        if (!targetClient.IsActive)
+            return Result<TransferResponse>.Failure("Inactive clients cannot receive vehicles");
 
         var (recordId, transferredAt) = await vehicleRepository.TransferAsync(
             request.VehicleId, request.ToClientId, request.Notes);

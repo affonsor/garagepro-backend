@@ -8,11 +8,17 @@ public class GetAllServicesHandler(IServiceRepository serviceRepository) : IRequ
 {
     public async Task<Result<PaginatedResult<ServiceResponse>>> Handle(GetAllServicesQuery request, CancellationToken cancellationToken)
     {
-        var (services, total) = await serviceRepository.GetAllAsync(request.PageNumber, request.PageSize);
+        var (services, total) = await serviceRepository.GetAllAsync(
+            request.PageNumber,
+            request.PageSize,
+            request.Search,
+            request.Category,
+            request.Tier,
+            request.Active);
 
-        var items = services.Select(s => new ServiceResponse(s.Id, s.Name, s.Description, s.Price, s.CreatedAt, s.UpdatedAt));
+        var items = services.Select(ServiceResponse.From);
 
         return Result<PaginatedResult<ServiceResponse>>.Success(
-            new PaginatedResult<ServiceResponse>(items, total, request.PageNumber, request.PageSize));
+            new PaginatedResult<ServiceResponse>(items, request.PageNumber, request.PageSize, total));
     }
 }

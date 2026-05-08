@@ -12,7 +12,6 @@ public class GetServiceByIdHandler(IServiceRepository serviceRepository) : IRequ
         if (service is null)
             return Result<ServiceResponse>.NotFound("Service not found");
 
-        return Result<ServiceResponse>.Success(
-            new ServiceResponse(service.Id, service.Name, service.Description, service.Price, service.CreatedAt, service.UpdatedAt));
+        return Result<ServiceResponse>.Success(ServiceResponse.From(service));
     }
 }

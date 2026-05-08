@@ -12,10 +12,13 @@ public class DeleteClientHandler(IClientRepository clientRepository) : IRequestH
         if (client is null)
             return Result<bool>.NotFound("Client not found");
 
-        if (await clientRepository.HasVehiclesByClientIdAsync(request.Id))
-            return Result<bool>.Failure("Client has linked vehicles and cannot be deleted");
+        if (!client.IsActive)
+            return Result<bool>.Success(true);
 
-        await clientRepository.DeleteAsync(request.Id);
+        client.IsActive = false;
+        client.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await clientRepository.UpdateAsync(client);
         return Result<bool>.Success(true);
     }
 }

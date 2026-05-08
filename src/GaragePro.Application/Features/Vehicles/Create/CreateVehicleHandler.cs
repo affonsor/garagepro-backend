@@ -15,16 +15,22 @@ public class CreateVehicleHandler(
         if (client is null)
             return Result<Guid>.NotFound("Client not found");
 
-        if (await vehicleRepository.ExistsByLicensePlateAsync(request.LicensePlate))
-            return Result<Guid>.Failure("License plate already registered");
+        if (!client.IsActive)
+            return Result<Guid>.Failure("Inactive clients cannot receive vehicles");
+
+        var licensePlate = NormalizeLicensePlate(request.LicensePlate);
+
+        if (await vehicleRepository.ExistsByLicensePlateAsync(licensePlate))
+            return Result<Guid>.Conflict("License plate already registered");
 
         var vehicle = new Vehicle
         {
             Id = Guid.NewGuid(),
             ClientId = request.ClientId,
-            LicensePlate = request.LicensePlate,
+            LicensePlate = licensePlate,
             Make = request.Make,
             Model = request.Model,
+            Type = request.Type,
             Year = request.Year,
             Color = request.Color,
             VIN = request.VIN,
@@ -35,4 +41,7 @@ public class CreateVehicleHandler(
         await vehicleRepository.CreateAsync(vehicle);
         return Result<Guid>.Success(vehicle.Id);
     }
+
+    private static string NormalizeLicensePlate(string licensePlate) =>
+        licensePlate.Trim().ToUpperInvariant();
 }

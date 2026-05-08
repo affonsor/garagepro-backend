@@ -5,11 +5,15 @@ using GaragePro.Application.Features.Products.Delete;
 using GaragePro.Application.Features.Products.GetAll;
 using GaragePro.Application.Features.Products.GetById;
 using GaragePro.Application.Features.Products.Update;
+using GaragePro.Core.Entities;
+using GaragePro.Core.Enums;
 using GaragePro.Core.Interfaces.Repositories;
+using GaragePro.Infrastructure.Data;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 
 namespace GaragePro.API.Endpoints;
 
@@ -22,13 +26,19 @@ public static class ProductsEndpoints
             .WithTags("Products");
 
         group.MapGet("/active", async (IProductRepository repo, CancellationToken ct) =>
-            Results.Ok(await repo.GetActiveAsync(ct)))
+            Results.Ok((await repo.GetActiveAsync(ct)).Select(ProductResponse.From)))
         .WithSummary("List active products")
         .RequireAuthorization();
 
-        group.MapGet("/", async (IMediator mediator, int pageNumber = 1, int pageSize = 20) =>
+        group.MapGet("/", async (
+            IMediator mediator,
+            int pageNumber = 1,
+            int pageSize = 20,
+            string? search = null,
+            string? status = null,
+            string? category = null) =>
         {
-            var result = await mediator.Send(new GetAllProductsQuery(pageNumber, pageSize));
+            var result = await mediator.Send(new GetAllProductsQuery(pageNumber, pageSize, search, status, category));
             return Results.Ok(result.Value);
         })
         .WithSummary("List all products paginated")
@@ -48,6 +58,57 @@ public static class ProductsEndpoints
         .WithSummary("Get product by ID")
         .WithDescription("Returns a single product by its ID.")
         .Produces<ProductResponse>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet("/{id:guid}/movement-summary", async (Guid id, string? month, AppDbContext db, CancellationToken ct) =>
+        {
+            var productExists = await db.Products.AnyAsync(p => p.Id == id, ct);
+            if (!productExists)
+                return Results.NotFound(new { error = "Product not found" });
+
+            var hasMonth = false;
+            var from = default(DateTimeOffset);
+            var to = default(DateTimeOffset);
+            if (!string.IsNullOrWhiteSpace(month) && DateOnly.TryParse($"{month}-01", out var parsed))
+            {
+                hasMonth = true;
+                from = new DateTimeOffset(parsed.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+                to = new DateTimeOffset(parsed.AddMonths(1).AddDays(-1).ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+            }
+
+            IQueryable<ServiceOrderProductLine> query = db.ServiceOrderProductLines
+                .Include(l => l.ServiceOrder)
+                .Where(l => l.ProductId == id);
+
+            if (hasMonth)
+            {
+                query = query.Where(l => l.ServiceOrder.ScheduledAt >= from && l.ServiceOrder.ScheduledAt <= to);
+            }
+
+            var sold = await query
+                .Where(l => l.ServiceOrder.Status == OrderStatus.Completed)
+                .SumAsync(l => l.Quantity, ct);
+
+            var serviceLinesQuery = db.ServiceOrderServiceLines
+                .Include(l => l.ServiceOrder)
+                .Include(l => l.Service).ThenInclude(s => s.Materials)
+                .Where(l => l.ServiceOrder.Status == OrderStatus.Completed);
+
+            if (hasMonth)
+                serviceLinesQuery = serviceLinesQuery.Where(l => l.ServiceOrder.ScheduledAt >= from && l.ServiceOrder.ScheduledAt <= to);
+
+            var serviceLines = await serviceLinesQuery
+                .ToListAsync(ct);
+
+            var internalConsumption = serviceLines.Sum(l =>
+                l.Service.Materials
+                    .Where(m => m.ProductId == id)
+                    .Sum(m => m.Quantity * l.Quantity));
+
+            return Results.Ok(new ProductMovementSummaryResponse(sold, internalConsumption, null));
+        })
+        .WithSummary("Get product movement summary")
+        .Produces<ProductMovementSummaryResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/", async (CreateProductCommand command, IMediator mediator) =>

@@ -44,6 +44,9 @@ api.MapVehiclesEndpoints();
 api.MapProductsEndpoints();
 api.MapServicesEndpoints();
 api.MapAppointmentsEndpoints();
+api.MapServiceOrdersEndpoints();
+api.MapDashboardEndpoints();
+api.MapSearchEndpoints();
 
 app.UseSwaggerInDevelopment(app.Environment);
 

@@ -15,6 +15,7 @@ public class AppointmentRepository(AppDbContext context) : IAppointmentRepositor
     {
         var query = context.Appointments
             .Include(a => a.Client)
+            .Include(a => a.Vehicle)
             .Include(a => a.Product)
             .Include(a => a.Service)
             .AsQueryable();
@@ -49,6 +50,7 @@ public class AppointmentRepository(AppDbContext context) : IAppointmentRepositor
     {
         var query = context.Appointments
             .Include(a => a.Client)
+            .Include(a => a.Vehicle)
             .Include(a => a.Product)
             .Include(a => a.Service)
             .AsQueryable();
@@ -83,6 +85,7 @@ public class AppointmentRepository(AppDbContext context) : IAppointmentRepositor
     public async Task<Appointment?> GetByIdAsync(Guid id, CancellationToken ct) =>
         await context.Appointments
             .Include(a => a.Client)
+            .Include(a => a.Vehicle)
             .Include(a => a.Product)
             .Include(a => a.Service)
             .Include(a => a.RescheduleHistory).ThenInclude(h => h.ChangedBy)

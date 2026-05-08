@@ -8,11 +8,16 @@ public class GetAllProductsHandler(IProductRepository productRepository) : IRequ
 {
     public async Task<Result<PaginatedResult<ProductResponse>>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
     {
-        var (products, total) = await productRepository.GetAllAsync(request.PageNumber, request.PageSize);
+        var (products, total) = await productRepository.GetAllAsync(
+            request.PageNumber,
+            request.PageSize,
+            request.Search,
+            request.Status,
+            request.Category);
 
-        var items = products.Select(p => new ProductResponse(p.Id, p.Name, p.Description, p.Price, p.CreatedAt, p.UpdatedAt));
+        var items = products.Select(ProductResponse.From);
 
         return Result<PaginatedResult<ProductResponse>>.Success(
-            new PaginatedResult<ProductResponse>(items, total, request.PageNumber, request.PageSize));
+            new PaginatedResult<ProductResponse>(items, request.PageNumber, request.PageSize, total));
     }
 }

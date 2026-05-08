@@ -14,6 +14,9 @@ public class DeleteAddressHandler(
         if (client is null)
             return Result<bool>.NotFound("Client not found");
 
+        if (!client.IsActive)
+            return Result<bool>.Failure("Inactive clients cannot be modified");
+
         var address = await addressRepository.GetByIdAsync(request.AddressId);
         if (address is null || address.ClientId != request.ClientId)
             return Result<bool>.NotFound("Address not found");

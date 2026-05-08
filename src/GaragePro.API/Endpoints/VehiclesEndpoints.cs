@@ -53,7 +53,8 @@ public static class VehiclesEndpoints
                 ResultStatus.Success => Results.Created($"/api/vehicles/{result.Value}", new IdResponse(result.Value)),
                 ResultStatus.NotFound => Results.NotFound(new { error = result.Error }),
                 ResultStatus.ValidationFailure => Results.BadRequest(new { error = "Validation failed", errors = result.Errors }),
-                ResultStatus.Failure => Results.Conflict(new { error = result.Error }),
+                ResultStatus.Conflict => Results.Conflict(new { error = result.Error }),
+                ResultStatus.Failure => Results.BadRequest(new { error = result.Error }),
                 _ => Results.BadRequest(new { error = result.Error })
             };
         })

@@ -157,6 +157,10 @@ namespace GaragePro.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_id");
+
                     b.Property<uint>("xmin")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -180,6 +184,9 @@ namespace GaragePro.Infrastructure.Migrations
 
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_appointments_status");
+
+                    b.HasIndex("VehicleId")
+                        .HasDatabaseName("ix_appointments_vehicle_id");
 
                     b.ToTable("appointments", (string)null);
                 });
@@ -241,13 +248,23 @@ namespace GaragePro.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("AddressText")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("address_text");
+
+                    b.Property<DateOnly?>("Birthday")
+                        .HasColumnType("date")
+                        .HasColumnName("birthday");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Document")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .IsRequired()
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)")
                         .HasColumnName("document");
 
                     b.Property<string>("Email")
@@ -255,16 +272,35 @@ namespace GaragePro.Infrastructure.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("email");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name");
 
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
                         .HasColumnName("phone");
+
+                    b.Property<string>("Tier")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasDefaultValue("standard")
+                        .HasColumnName("tier");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -272,6 +308,10 @@ namespace GaragePro.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_clients");
+
+                    b.HasIndex("Document")
+                        .IsUnique()
+                        .HasDatabaseName("ix_clients_document");
 
                     b.ToTable("clients", (string)null);
                 });
@@ -282,6 +322,26 @@ namespace GaragePro.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Barcode")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("barcode");
+
+                    b.Property<string>("Brand")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("brand");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("category");
+
+                    b.Property<decimal>("Cost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("cost");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -297,6 +357,11 @@ namespace GaragePro.Infrastructure.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("is_active");
 
+                    b.Property<decimal>("MinStock")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)")
+                        .HasColumnName("min_stock");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -308,6 +373,34 @@ namespace GaragePro.Infrastructure.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("price");
 
+                    b.Property<string>("Size")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("size");
+
+                    b.Property<string>("Sku")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("sku");
+
+                    b.Property<decimal>("Stock")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)")
+                        .HasColumnName("stock");
+
+                    b.Property<string>("Supplier")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("supplier");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("un")
+                        .HasColumnName("unit");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -315,9 +408,20 @@ namespace GaragePro.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_products");
 
+                    b.HasIndex("Sku")
+                        .IsUnique()
+                        .HasDatabaseName("ix_products_sku")
+                        .HasFilter("sku IS NOT NULL");
+
                     b.ToTable("products", null, t =>
                         {
+                            t.HasCheckConstraint("ck_products_cost", "cost >= 0");
+
+                            t.HasCheckConstraint("ck_products_min_stock", "min_stock >= 0");
+
                             t.HasCheckConstraint("ck_products_price", "price >= 0");
+
+                            t.HasCheckConstraint("ck_products_stock", "stock >= 0");
                         });
                 });
 
@@ -327,6 +431,21 @@ namespace GaragePro.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Category")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("category");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("code");
+
+                    b.Property<decimal>("Cost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("cost");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -335,6 +454,11 @@ namespace GaragePro.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("description");
+
+                    b.Property<string>("Duration")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("duration");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -353,6 +477,14 @@ namespace GaragePro.Infrastructure.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("price");
 
+                    b.Property<string>("Tier")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasDefaultValue("standard")
+                        .HasColumnName("tier");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -360,9 +492,293 @@ namespace GaragePro.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_services");
 
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_services_code")
+                        .HasFilter("code IS NOT NULL");
+
                     b.ToTable("services", null, t =>
                         {
+                            t.HasCheckConstraint("ck_services_cost", "cost >= 0");
+
                             t.HasCheckConstraint("ck_services_price", "price >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceMaterial", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_materials");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_service_materials_product_id");
+
+                    b.HasIndex("ServiceId", "ProductId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_service_materials_service_id_product_id");
+
+                    b.ToTable("service_materials", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_service_materials_quantity", "quantity > 0");
+                        });
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("BoxNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("box_number");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("order_number");
+
+                    b.Property<DateTimeOffset>("ScheduledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("scheduled_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("total_price");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_orders");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("ix_service_orders_client_id");
+
+                    b.HasIndex("OrderNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_service_orders_order_number");
+
+                    b.HasIndex("ScheduledAt")
+                        .HasDatabaseName("ix_service_orders_scheduled_at");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_service_orders_status");
+
+                    b.HasIndex("VehicleId")
+                        .HasDatabaseName("ix_service_orders_vehicle_id");
+
+                    b.ToTable("service_orders", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_service_orders_box_number", "box_number between 1 and 6");
+
+                            t.HasCheckConstraint("ck_service_orders_total_price", "total_price >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceOrderProductLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("line_total");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("product_name");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("ServiceOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_order_id");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("unit_price");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_order_product_lines");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_service_order_product_lines_product_id");
+
+                    b.HasIndex("ServiceOrderId")
+                        .HasDatabaseName("ix_service_order_product_lines_service_order_id");
+
+                    b.ToTable("service_order_product_lines", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_service_order_product_lines_line_total", "line_total >= 0");
+
+                            t.HasCheckConstraint("ck_service_order_product_lines_quantity", "quantity > 0");
+
+                            t.HasCheckConstraint("ck_service_order_product_lines_unit_price", "unit_price >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceOrderServiceLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("line_total");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("service_name");
+
+                    b.Property<Guid>("ServiceOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_order_id");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("unit_price");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_order_service_lines");
+
+                    b.HasIndex("ServiceId")
+                        .HasDatabaseName("ix_service_order_service_lines_service_id");
+
+                    b.HasIndex("ServiceOrderId")
+                        .HasDatabaseName("ix_service_order_service_lines_service_order_id");
+
+                    b.ToTable("service_order_service_lines", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_service_order_service_lines_line_total", "line_total >= 0");
+
+                            t.HasCheckConstraint("ck_service_order_service_lines_quantity", "quantity > 0");
+
+                            t.HasCheckConstraint("ck_service_order_service_lines_unit_price", "unit_price >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceStep", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_steps");
+
+                    b.HasIndex("ServiceId", "Position")
+                        .IsUnique()
+                        .HasDatabaseName("ix_service_steps_service_id_position");
+
+                    b.ToTable("service_steps", (string)null);
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceVehiclePrice", b =>
+                {
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_id");
+
+                    b.Property<string>("VehicleType")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("vehicle_type");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("price");
+
+                    b.HasKey("ServiceId", "VehicleType")
+                        .HasName("pk_service_vehicle_prices");
+
+                    b.ToTable("service_vehicle_prices", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_service_vehicle_prices_price", "price >= 0");
                         });
                 });
 
@@ -448,6 +864,14 @@ namespace GaragePro.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("model");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Car")
+                        .HasColumnName("type");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -550,11 +974,20 @@ namespace GaragePro.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_appointments_services_service_id");
 
+                    b.HasOne("GaragePro.Core.Entities.Vehicle", "Vehicle")
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_appointments_vehicles_vehicle_id");
+
                     b.Navigation("Client");
 
                     b.Navigation("Product");
 
                     b.Navigation("Service");
+
+                    b.Navigation("Vehicle");
                 });
 
             modelBuilder.Entity("GaragePro.Core.Entities.AppointmentRescheduleHistory", b =>
@@ -576,6 +1009,114 @@ namespace GaragePro.Infrastructure.Migrations
                     b.Navigation("Appointment");
 
                     b.Navigation("ChangedBy");
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceMaterial", b =>
+                {
+                    b.HasOne("GaragePro.Core.Entities.Product", "Product")
+                        .WithMany("ServiceMaterials")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_materials_products_product_id");
+
+                    b.HasOne("GaragePro.Core.Entities.Service", "Service")
+                        .WithMany("Materials")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_materials_services_service_id");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceOrder", b =>
+                {
+                    b.HasOne("GaragePro.Core.Entities.Client", "Client")
+                        .WithMany("ServiceOrders")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_orders_clients_client_id");
+
+                    b.HasOne("GaragePro.Core.Entities.Vehicle", "Vehicle")
+                        .WithMany("ServiceOrders")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_orders_vehicles_vehicle_id");
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceOrderProductLine", b =>
+                {
+                    b.HasOne("GaragePro.Core.Entities.Product", "Product")
+                        .WithMany("ServiceOrderProductLines")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_order_product_lines_products_product_id");
+
+                    b.HasOne("GaragePro.Core.Entities.ServiceOrder", "ServiceOrder")
+                        .WithMany("ProductLines")
+                        .HasForeignKey("ServiceOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_order_product_lines_service_orders_service_order_id");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ServiceOrder");
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceOrderServiceLine", b =>
+                {
+                    b.HasOne("GaragePro.Core.Entities.Service", "Service")
+                        .WithMany("ServiceOrderServiceLines")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_order_service_lines_services_service_id");
+
+                    b.HasOne("GaragePro.Core.Entities.ServiceOrder", "ServiceOrder")
+                        .WithMany("ServiceLines")
+                        .HasForeignKey("ServiceOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_order_service_lines_service_orders_service_order_id");
+
+                    b.Navigation("Service");
+
+                    b.Navigation("ServiceOrder");
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceStep", b =>
+                {
+                    b.HasOne("GaragePro.Core.Entities.Service", "Service")
+                        .WithMany("Steps")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_steps_services_service_id");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceVehiclePrice", b =>
+                {
+                    b.HasOne("GaragePro.Core.Entities.Service", "Service")
+                        .WithMany("VehiclePrices")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_vehicle_prices_services_service_id");
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("GaragePro.Core.Entities.Vehicle", b =>
@@ -627,11 +1168,40 @@ namespace GaragePro.Infrastructure.Migrations
                 {
                     b.Navigation("Addresses");
 
+                    b.Navigation("ServiceOrders");
+
                     b.Navigation("Vehicles");
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.Product", b =>
+                {
+                    b.Navigation("ServiceMaterials");
+
+                    b.Navigation("ServiceOrderProductLines");
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.Service", b =>
+                {
+                    b.Navigation("Materials");
+
+                    b.Navigation("ServiceOrderServiceLines");
+
+                    b.Navigation("Steps");
+
+                    b.Navigation("VehiclePrices");
+                });
+
+            modelBuilder.Entity("GaragePro.Core.Entities.ServiceOrder", b =>
+                {
+                    b.Navigation("ProductLines");
+
+                    b.Navigation("ServiceLines");
                 });
 
             modelBuilder.Entity("GaragePro.Core.Entities.Vehicle", b =>
                 {
+                    b.Navigation("ServiceOrders");
+
                     b.Navigation("TransferHistory");
                 });
 #pragma warning restore 612, 618

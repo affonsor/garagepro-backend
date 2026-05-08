@@ -6,6 +6,7 @@ public class Appointment
 {
     public Guid Id { get; set; }
     public Guid ClientId { get; set; }
+    public Guid VehicleId { get; set; }
     public Guid ProductId { get; set; }
     public Guid ServiceId { get; set; }
     public DateTimeOffset StartAt { get; set; }
@@ -21,6 +22,7 @@ public class Appointment
     public DateTimeOffset UpdatedAt { get; set; }
 
     public Client Client { get; set; } = null!;
+    public Vehicle Vehicle { get; set; } = null!;
     public Product Product { get; set; } = null!;
     public Service Service { get; set; } = null!;
     public ICollection<AppointmentRescheduleHistory> RescheduleHistory { get; set; } = [];

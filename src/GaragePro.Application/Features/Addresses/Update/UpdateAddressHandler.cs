@@ -14,6 +14,9 @@ public class UpdateAddressHandler(
         if (client is null)
             return Result<Guid>.NotFound("Client not found");
 
+        if (!client.IsActive)
+            return Result<Guid>.Failure("Inactive clients cannot be modified");
+
         var address = await addressRepository.GetByIdAsync(request.AddressId);
         if (address is null || address.ClientId != request.ClientId)
             return Result<Guid>.NotFound("Address not found");

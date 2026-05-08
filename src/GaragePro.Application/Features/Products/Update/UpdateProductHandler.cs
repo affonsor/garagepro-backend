@@ -13,11 +13,25 @@ public class UpdateProductHandler(IProductRepository productRepository) : IReque
             return Result<Guid>.NotFound("Product not found");
 
         product.Name = request.Name;
+        product.Sku = NormalizeOptional(request.Sku);
+        product.Brand = request.Brand;
+        product.Category = request.Category;
+        product.Size = request.Size;
+        product.Unit = string.IsNullOrWhiteSpace(request.Unit) ? "un" : request.Unit.Trim();
         product.Description = request.Description;
+        product.Cost = request.Cost;
         product.Price = request.Price;
+        product.Stock = request.Stock;
+        product.MinStock = request.MinStock;
+        product.Supplier = request.Supplier;
+        product.Barcode = request.Barcode;
+        product.IsActive = request.Active;
         product.UpdatedAt = DateTimeOffset.UtcNow;
 
         await productRepository.UpdateAsync(product);
         return Result<Guid>.Success(product.Id);
     }
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

@@ -19,7 +19,9 @@ public class GetAppointmentsHandler(IAppointmentRepository appointmentRepository
             request.ClientId, request.Search, cancellationToken);
 
         var responses = items.Select(a => new AppointmentSummaryResponse(
-            a.Id, a.Client.Name, a.Product.Name, a.Service.Name,
+            a.Id, a.Client.Name,
+            a.VehicleId, a.Vehicle.LicensePlate, a.Vehicle.Model, a.Vehicle.Type,
+            a.Product.Name, a.Service.Name,
             a.StartAt, a.ExpectedEndAt, a.Status, a.IsRescheduled,
             a.TotalValue, a.Notes));
 

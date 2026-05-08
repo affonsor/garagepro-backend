@@ -14,6 +14,7 @@ public class UpdateVehicleHandler(IVehicleRepository vehicleRepository) : IReque
 
         vehicle.Make = request.Make;
         vehicle.Model = request.Model;
+        vehicle.Type = request.Type;
         vehicle.Year = request.Year;
         vehicle.Color = request.Color;
         vehicle.VIN = request.VIN;

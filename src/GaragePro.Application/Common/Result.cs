@@ -19,6 +19,7 @@ public sealed class Result<T>
 
     public static Result<T> Success(T value) => new(ResultStatus.Success, value);
     public static Result<T> Failure(string error) => new(ResultStatus.Failure, error: error);
+    public static Result<T> Conflict(string error) => new(ResultStatus.Conflict, error: error);
     public static Result<T> ValidationFailure(IEnumerable<string> errors) => new(ResultStatus.ValidationFailure, errors: errors);
     public static Result<T> NotFound(string message) => new(ResultStatus.NotFound, error: message);
 }
@@ -27,6 +28,7 @@ public enum ResultStatus
 {
     Success,
     Failure,
+    Conflict,
     ValidationFailure,
     NotFound
 }

@@ -22,12 +22,14 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
         builder.Property(a => a.UpdatedAt).IsRequired();
 
         builder.HasOne(a => a.Client).WithMany().HasForeignKey(a => a.ClientId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(a => a.Vehicle).WithMany().HasForeignKey(a => a.VehicleId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(a => a.Product).WithMany().HasForeignKey(a => a.ProductId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(a => a.Service).WithMany().HasForeignKey(a => a.ServiceId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(a => a.StartAt);
         builder.HasIndex(a => a.Status);
         builder.HasIndex(a => a.ClientId);
+        builder.HasIndex(a => a.VehicleId);
 
         // Optimistic concurrency via PostgreSQL xmin system column
         builder.Property<uint>("xmin").HasColumnType("xid").ValueGeneratedOnAddOrUpdate().IsConcurrencyToken();

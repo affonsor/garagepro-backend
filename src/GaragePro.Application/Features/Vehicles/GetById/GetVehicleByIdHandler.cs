@@ -17,6 +17,7 @@ public class GetVehicleByIdHandler(IVehicleRepository vehicleRepository) : IRequ
             vehicle.LicensePlate,
             vehicle.Make,
             vehicle.Model,
+            vehicle.Type,
             vehicle.Year,
             vehicle.Color,
             vehicle.VIN,

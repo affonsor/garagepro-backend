@@ -1,4 +1,5 @@
 using GaragePro.Core.Entities;
+using GaragePro.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,6 +17,11 @@ public class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
 
         builder.Property(v => v.Make).IsRequired().HasMaxLength(100);
         builder.Property(v => v.Model).IsRequired().HasMaxLength(100);
+        builder.Property(v => v.Type)
+            .HasConversion(v => v.ToString(), v => Enum.Parse<VehicleType>(v))
+            .HasMaxLength(20)
+            .IsRequired()
+            .HasDefaultValue(VehicleType.Car);
         builder.Property(v => v.Year).IsRequired();
         builder.Property(v => v.Color).HasMaxLength(50);
         builder.Property(v => v.VIN).HasMaxLength(17);

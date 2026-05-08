@@ -22,13 +22,23 @@ public static class ServicesEndpoints
             .WithTags("Services");
 
         group.MapGet("/active", async (IServiceRepository repo, CancellationToken ct) =>
-            Results.Ok(await repo.GetActiveAsync(ct)))
+        {
+            var services = await repo.GetActiveAsync(ct);
+            return Results.Ok(services.Select(ServiceResponse.From));
+        })
         .WithSummary("List active services")
         .RequireAuthorization();
 
-        group.MapGet("/", async (IMediator mediator, int pageNumber = 1, int pageSize = 20) =>
+        group.MapGet("/", async (
+            IMediator mediator,
+            int pageNumber = 1,
+            int pageSize = 20,
+            string? search = null,
+            string? category = null,
+            string? tier = null,
+            bool? active = null) =>
         {
-            var result = await mediator.Send(new GetAllServicesQuery(pageNumber, pageSize));
+            var result = await mediator.Send(new GetAllServicesQuery(pageNumber, pageSize, search, category, tier, active));
             return Results.Ok(result.Value);
         })
         .WithSummary("List all services paginated")

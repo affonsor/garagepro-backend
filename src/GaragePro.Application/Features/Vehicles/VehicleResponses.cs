@@ -1,3 +1,5 @@
+using GaragePro.Core.Enums;
+
 namespace GaragePro.Application.Features.Vehicles;
 
 public record VehicleSummaryResponse(
@@ -5,6 +7,7 @@ public record VehicleSummaryResponse(
     string LicensePlate,
     string Make,
     string Model,
+    VehicleType Type,
     int Year,
     string? Color,
     ClientRefResponse CurrentOwner,
@@ -15,6 +18,7 @@ public record VehicleDetailResponse(
     string LicensePlate,
     string Make,
     string Model,
+    VehicleType Type,
     int Year,
     string? Color,
     string? VIN,

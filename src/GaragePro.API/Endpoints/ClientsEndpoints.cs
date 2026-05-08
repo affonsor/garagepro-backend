@@ -7,6 +7,7 @@ using GaragePro.Application.Features.Clients.Create;
 using GaragePro.Application.Features.Clients.Delete;
 using GaragePro.Application.Features.Clients.GetAll;
 using GaragePro.Application.Features.Clients.GetById;
+using GaragePro.Application.Features.Clients.Reactivate;
 using GaragePro.Application.Features.Clients.Update;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -23,9 +24,22 @@ public static class ClientsEndpoints
             .RequireAuthorization()
             .WithTags("Clients");
 
-        group.MapGet("/", async (IMediator mediator, int pageNumber = 1, int pageSize = 20) =>
+        group.MapGet("/", async (
+            IMediator mediator,
+            int pageNumber = 1,
+            int pageSize = 20,
+            bool includeInactive = false,
+            string? search = null,
+            string? tier = null,
+            int? birthdayMonth = null) =>
         {
-            var result = await mediator.Send(new GetAllClientsQuery(pageNumber, pageSize));
+            var result = await mediator.Send(new GetAllClientsQuery(
+                pageNumber,
+                pageSize,
+                includeInactive,
+                search,
+                tier,
+                birthdayMonth));
             return Results.Ok(result.Value);
         })
         .WithSummary("List all clients paginated")
@@ -53,15 +67,17 @@ public static class ClientsEndpoints
             return result.Status switch
             {
                 ResultStatus.Success => Results.Created($"/api/clients/{result.Value}", new IdResponse(result.Value)),
+                ResultStatus.Conflict => Results.Conflict(new { error = result.Error }),
                 ResultStatus.ValidationFailure => Results.BadRequest(new { error = "Validation failed", errors = result.Errors }),
                 _ => Results.BadRequest(new { error = result.Error })
             };
         })
         .RequireAuthorization("TechnicianOrAdmin")
         .WithSummary("Create a new client")
-        .WithDescription("Creates a client with at least one address. Requires Technician or Admin role.")
+        .WithDescription("Creates a client with at least one address and one vehicle. Requires Technician or Admin role.")
         .Produces<IdResponse>(StatusCodes.Status201Created)
-        .ProducesValidationProblem(StatusCodes.Status400BadRequest);
+        .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status409Conflict);
 
         group.MapPut("/{id:guid}", async (Guid id, UpdateClientCommand command, IMediator mediator) =>
         {
@@ -70,6 +86,7 @@ public static class ClientsEndpoints
             {
                 ResultStatus.Success => Results.Ok(new IdResponse(result.Value)),
                 ResultStatus.NotFound => Results.NotFound(new { error = result.Error }),
+                ResultStatus.Conflict => Results.Conflict(new { error = result.Error }),
                 ResultStatus.ValidationFailure => Results.BadRequest(new { error = "Validation failed", errors = result.Errors }),
                 _ => Results.BadRequest(new { error = result.Error })
             };
@@ -79,6 +96,7 @@ public static class ClientsEndpoints
         .WithDescription("Updates name, email, phone, and document. Addresses are managed via the /addresses sub-routes.")
         .Produces<IdResponse>(StatusCodes.Status200OK)
         .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id:guid}", async (Guid id, IMediator mediator) =>
@@ -94,8 +112,26 @@ public static class ClientsEndpoints
         })
         .RequireAuthorization("TechnicianOrAdmin")
         .WithSummary("Delete a client")
-        .WithDescription("Permanently removes the client. Fails with 400 if the client has linked vehicles.")
+        .WithDescription("Logically deletes the client by marking it inactive while preserving vehicles and history.")
         .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPatch("/{id:guid}/reactivate", async (Guid id, IMediator mediator) =>
+        {
+            var result = await mediator.Send(new ReactivateClientCommand(id));
+            return result.Status switch
+            {
+                ResultStatus.Success => Results.Ok(new { id }),
+                ResultStatus.NotFound => Results.NotFound(new { error = result.Error }),
+                ResultStatus.Failure => Results.BadRequest(new { error = result.Error }),
+                _ => Results.BadRequest(new { error = result.Error })
+            };
+        })
+        .RequireAuthorization("TechnicianOrAdmin")
+        .WithSummary("Reactivate a client")
+        .WithDescription("Reactivates a logically deleted client when aggregate invariants are still valid.")
+        .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
 
